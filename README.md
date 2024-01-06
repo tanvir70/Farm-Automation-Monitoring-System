@@ -1,14 +1,14 @@
 # Farm-Automation-Monitoring-System
 
 
-This project showcases how to create an IoT sensor monitoring and control system using the ESP32 microcontroller. The system keeps track of temperature, humidity, gas levels, and water levels, enabling real-time data visualization through the Blynk mobile app. It also allows for remote control of a fan and a water pump based on sensor readings.
+This project showcases how to create an IoT sensor monitoring and control system using the ESP32 microcontroller. The system keeps track of temperature, humidity, gas levels, and water levels, enabling real-time data visualization through the Blynk mobile app. It also allows for automatic control of a fan and a water pump based on sensor readings.
 
 ## Features
 
 - Real-time temperature and humidity monitoring using a DHT11 sensor.
 - Gas level monitoring through an analog gas sensor.
 - Water level measurement using an ultrasonic sensor.
-- Remote control of a fan and a water pump.
+- Automatic control of a fan and a water pump.
 - Data visualization on a 16x2 I2C LCD display and via the Blynk mobile app.
 
 ## Hardware Requirements
