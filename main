@@ -1,0 +1,228 @@
+#define BLYNK_TEMPLATE_ID "TMPLflYojxqj"
+#define BLYNK_DEVICE_NAME "Quickstart Template"
+#define BLYNK_AUTH_TOKEN "i-okrJcQYg0tCUPFyL1gXA3bYlL0tyDq"
+#define BLYNK_PRINT Serial
+
+#include <WiFi.h>
+#include <WiFiClient.h>
+#include <BlynkSimpleEsp32.h>
+#include <LiquidCrystal_I2C.h>
+#include "DHT.h"
+
+#define DHTTYPE DHT11
+#define dht_dpin 13
+DHT dht(dht_dpin, DHTTYPE);
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+WidgetLCD lcd2(V8);
+int sensor_input = 34; // Gas sensor input pin
+const int relay = 26;
+const int relay1 = 25;
+int trigger_pin = 5;
+int echo_pin = 18;
+int trigger_pin1 = 32;
+int echo_pin1 = 33;
+int distance_cm;
+int distance_cm1;
+int count = 0;
+
+char auth[] = BLYNK_AUTH_TOKEN;
+char ssid[] = "Xperia"; // Your WiFi SSID
+char pass[] = "12345678"; // Your WiFi password
+
+BlynkTimer timer;
+
+void sendSensor() {
+  int analog_data = analogRead(sensor_input);
+  Serial.println(analog_data);
+  delay(200);
+  dht.begin();
+  int h = dht.readHumidity();
+  int t = dht.readTemperature();
+  delay(100);
+  Blynk.virtualWrite(V4, t);
+  Blynk.virtualWrite(V5, h);
+  Blynk.virtualWrite(V6, analog_data);
+  delay(300);
+
+  lcd.clear();
+  lcd.setCursor(2, 0);
+  lcd.print("Food lvl:");
+
+  if (distance_cm1 >= 6) {
+    lcd.setCursor(11, 0);
+    lcd.print("0%");
+  }
+
+  if (distance_cm1 == 6) {
+    lcd.setCursor(11, 0);
+    lcd.print("0%");
+  }
+
+  if (distance_cm1 == 5) {
+    lcd.setCursor(11, 0);
+    lcd.print("25%");
+  }
+
+  if (distance_cm1 == 4) {
+    lcd.setCursor(11, 0);
+    lcd.print("50%");
+  }
+
+  if (distance_cm1 == 3) {
+    lcd.setCursor(11, 0);
+    lcd.print("75%");
+  }
+
+  if (distance_cm1 == 2) {
+    lcd.setCursor(11, 0);
+    lcd.print("100");
+  }
+
+  if (distance_cm1 == 1) {
+    lcd.setCursor(11, 0);
+    lcd.print("100%");
+  }
+
+  lcd2.clear();
+  lcd2.print(2, 0, "Food lvl:");
+
+  if (distance_cm1 >= 6) {
+    lcd2.print(11, 0, "0%");
+  }
+
+  if (distance_cm1 == 6) {
+    lcd2.print(11, 0, "0%");
+  }
+
+  if (distance_cm1 == 5) {
+    lcd2.print(11, 0, "25%");
+  }
+
+  if (distance_cm1 == 4) {
+    lcd2.print(11, 0, "50%");
+  }
+
+  if (distance_cm1 == 3) {
+    lcd2.print(11, 0, "75%");
+  }
+
+  if (distance_cm1 == 2) {
+    lcd2.print(11, 0, "100%");
+  }
+
+  if (distance_cm1 == 1) {
+    lcd2.print(11, 0, "100%");
+  }
+
+  lcd.setCursor(0, 1);
+  lcd.print("T:");
+  lcd.setCursor(2, 1);
+  lcd.print(t);
+  lcd.setCursor(5, 1);
+  lcd.print("H:");
+  lcd.setCursor(7, 1);
+  lcd.print(h);
+  lcd.setCursor(10, 1);
+  lcd.print("G:");
+  lcd.setCursor(12, 1);
+  lcd.print(analog_data);
+  delay(100);
+
+  if (analog_data >= 1000) {
+    digitalWrite(relay, LOW);
+    Serial.println("fan is on");
+  } else {
+    digitalWrite(relay, HIGH);
+    Serial.println("fan is off");
+  }
+}
+
+void waterlvl() {
+  digitalWrite(trigger_pin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigger_pin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigger_pin, LOW);
+  long duration = pulseIn(echo_pin, HIGH);
+  distance_cm = (duration / 2) / 29.09;
+  Serial.println(distance_cm);
+
+  if (distance_cm >= 6) {
+    Blynk.virtualWrite(V7, 0);
+  }
+
+  if (distance_cm == 6) {
+    Blynk.virtualWrite(V7, 0);
+  }
+
+  if (distance_cm == 5) {
+    Blynk.virtualWrite(V7, 25);
+  }
+
+  if (distance_cm == 4) {
+    Blynk.virtualWrite(V7, 50);
+  }
+
+  if (distance_cm == 3) {
+    Blynk.virtualWrite(V7, 75);
+  }
+
+  if (distance_cm == 2) {
+    Blynk.virtualWrite(V7, 100);
+  }
+
+  if (distance_cm == 1) {
+    Blynk.virtualWrite(V7, 100);
+  }
+
+  delay(500);
+
+  if (distance_cm >= 4) {
+    digitalWrite(relay1, LOW);
+    Serial.println("pump on");
+    delay(1000);
+
+    if (distance_cm <= 1) {
+      digitalWrite(relay1, HIGH);
+      Serial.println("pump off");
+    }
+  } else {
+    digitalWrite(relay1, HIGH);
+    Serial.println("pump off");
+  }
+}
+
+void Foodlvl() {
+  digitalWrite(trigger_pin1, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigger_pin1, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigger_pin1, LOW);
+  long duration = pulseIn(echo_pin1, HIGH);
+  distance_cm1 = (duration / 2) / 29.09;
+  Serial.println(distance_cm1);
+  Blynk.virtualWrite(V8, distance_cm1);
+  delay(100);
+}
+
+void setup() {
+  Serial.begin(9600);
+  Blynk.begin(auth, ssid, pass);
+  timer.setInterval(50L, sendSensor);
+  timer.setInterval(50L, waterlvl);
+  timer.setInterval(50L, Foodlvl);
+  pinMode(relay, OUTPUT);
+  pinMode(relay1, OUTPUT);
+  pinMode(trigger_pin, OUTPUT);
+  pinMode(echo_pin, INPUT);
+  pinMode(trigger_pin1, OUTPUT);
+  pinMode(echo_pin1, INPUT);
+  lcd.begin();
+  lcd.backlight();
+}
+
+void loop() {
+  Blynk.run();
+  timer.run();
+}
